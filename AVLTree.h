@@ -15,30 +15,6 @@ public:
     using KeyType = std::string;
     using ValueType = size_t;
 
-protected:
-    class AVLNode {
-    public:
-        KeyType key;
-        ValueType value;
-        size_t height;
-
-        AVLNode* left;
-        AVLNode* right;
-
-        // 0, 1 or 2
-        size_t numChildren() const;
-        // true or false
-        bool isLeaf() const;
-        // number of hops to deepest leaf node
-        size_t getHeight() const;
-
-        // insert,
-
-
-    };
-
-public:
-
     bool insert(const KeyType& key, const ValueType&);
     bool remove(const KeyType& key);
 
@@ -57,19 +33,37 @@ public:
 
     friend ostream& operator<<(ostream& os, const AVLTree& avlTree);
 
-    private:
+
+protected:
+    class AVLNode {
+    public:
+        KeyType key;
+        ValueType value;
+        size_t height;
+
+        AVLNode* left;
+        AVLNode* right;
+
+        // 0, 1 or 2
+        size_t numChildren() const;
+        // true or false
+        bool isLeaf() const;
+        // number of hops to deepest leaf node
+        size_t getHeight() const;
+    };
+
+private:
     AVLNode* root;
 
-    bool insert(AVLNode*& current, const KeyType& key, const ValueType& value);
+    bool insertNode(AVLNode*& current, const KeyType& key, const ValueType& value);
 
     /* Helper methods for remove */
-    // this overloaded remove will do the recursion to remove the node
-    bool remove(AVLNode*& current, KeyType key);
     // removeNode contains the logic for actually removing a node based on the numebr of children
     bool removeNode(AVLNode*& current);
+    // this overloaded remove will do the recursion to remove the node
+    bool remove(AVLNode*& current, KeyType key);
     // You will implement this, but it is needed for removeNode()
     void balanceNode(AVLNode*& node);
-
 };
 
 #endif //AVLTREE_H

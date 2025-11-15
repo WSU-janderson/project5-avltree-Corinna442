@@ -58,9 +58,62 @@ bool AVLTree::removeNode(AVLNode*& current){
     return true;
 }
 
-bool AVLTree::remove(AVLNode *&current, KeyType key) {
+// private remove
+bool AVLTree::remove(AVLNode*& current, KeyType key) {
+    return false;
+}
+
+// public remove
+bool AVLTree::remove(const KeyType& key) {
+    // todo: recursively find the node
+    // removeNode(current); // pass node to removeNode
+    // todo: call balance node
     return false;
 }
 
 void AVLTree::balanceNode(AVLNode *&node) {
+    // algorithm from notes
+}
+
+// node parameter is always the root node
+bool AVLTree::insert(const KeyType& key, const ValueType& value) {
+    return insertNode(root, key, value);
+}
+
+bool AVLTree::insertNode(AVLNode*& current, const KeyType& key, const ValueType& value) {
+
+    // Base case: recurse and find null spot.
+    if (current == nullptr) {
+        current = new AVLNode{key, value, 1, nullptr, nullptr};
+        return true; // go back to parent now
+    }
+
+    // Check for duplicate key
+    if (key == current->key) {
+        return false;
+    }
+
+    bool success;
+
+    if (key < current->key) {
+        success = insertNode(current->left, key, value);
+    } else {
+        success = insertNode(current->right, key, value);
+    }
+
+    // If insertion failed because of a duplicate then stop
+    if (!success) {
+        return false;
+    }
+
+    // Update height on way back up
+    current->height = 1 + std::max(
+        current->left ? current->left->getHeight() : 0,
+        current->right ? current->right->getHeight() : 0
+        );
+
+    // Rebalance
+    balanceNode(current);
+    return true; // After successful balance AND insertion
+
 }
