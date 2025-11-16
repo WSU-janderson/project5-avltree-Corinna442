@@ -8,7 +8,7 @@ AVLTree::AVLTree() : root(nullptr) {} // Default constructor
 // Destructor
 AVLTree::~AVLTree() {
     searchAndDestroy(root);
-    delete root;
+    root = nullptr;
 }
 
 // Destructor helper
@@ -24,15 +24,23 @@ void AVLTree::searchAndDestroy(AVLNode* node) {
 }
 
 size_t AVLTree::AVLNode::numChildren() const {
-    return 0;
+    // Count left and right children (increment) and return the num
+    size_t numChildren = 0;
+    if (left) {
+        numChildren++;
+    }
+    if (right) {
+        numChildren++;
+    }
+    return numChildren;
 }
 
 bool AVLTree::AVLNode::isLeaf() const {
-    return false;
+    return (left == nullptr && right == nullptr);
 }
 
 size_t AVLTree::AVLNode::getHeight() const {
-    return 0;
+    return height;
 }
 
 bool AVLTree::removeNode(AVLNode*& current){
@@ -40,34 +48,32 @@ bool AVLTree::removeNode(AVLNode*& current){
         return false; // Nothing to delete
     }
 
-    AVLNode* toDelete = current;
+    //AVLNode* toDelete = current;
 
     auto nChildren = current->numChildren();
 
     // CASE ONE: NO CHILD
     if (current->isLeaf()) {
         // case 1 we can delete the node
+        delete current;
         current = nullptr; // Parent pointer points to nullptr now
-        delete toDelete;
         return true;
-
-        // CASE 2: ONE CHILD
     }
 
+    // CASE 2: ONE CHILD
     if (current->numChildren() == 1) {
         // case 2 - replace current with its only child
 
-        AVLNode* child;
-
-        // Pick the only child
+        // pick one child
+        AVLNode* child = nullptr;
         if (current->left != nullptr) {
-            current = current->left;
+            child = current->left;
         } else {
-            current = current->right;
+            child = current->right;
         }
 
+        delete current; // Delete original node
         current = child; // Replace node with its child
-        delete toDelete; // Delete original node
         return true;
     }
     // CASE 3: TWO CHILDREN
@@ -87,6 +93,7 @@ bool AVLTree::removeNode(AVLNode*& current){
         current->key = newKey;
         current->value = newValue;
 
+        // DON'T NEED THIS: my remove function will utilize balance and height
         // current->height = current->getHeight();
         // balanceNode(current);
 
@@ -115,7 +122,7 @@ bool AVLTree::remove(AVLNode*& current, KeyType key) {
 
         // ---POST NODE DELETION--- //
         // Node was removed->update height and rebalance
-        size_t leftHeight, rightHeight = 0;
+        size_t leftHeight = 0, rightHeight = 0;
         if (current->left != nullptr) {
             leftHeight = current->left->getHeight();
         }
@@ -124,8 +131,7 @@ bool AVLTree::remove(AVLNode*& current, KeyType key) {
             rightHeight = current->right->getHeight();
         }
 
-        size_t max = (leftHeight > rightHeight) ? leftHeight : rightHeight;
-        current->height = max + 1;
+        current->height = 1 + std::max(leftHeight, rightHeight);
 
         balanceNode(current);
 
@@ -140,7 +146,7 @@ bool AVLTree::remove(AVLNode*& current, KeyType key) {
         }
 
         // Update height and rebalance
-        size_t leftHeight, rightHeight = 0;
+        size_t leftHeight = 0, rightHeight = 0;
         if (current->left != nullptr) {
             leftHeight = current->left->getHeight();
         }
@@ -149,8 +155,7 @@ bool AVLTree::remove(AVLNode*& current, KeyType key) {
             rightHeight = current->right->getHeight();
         }
 
-        size_t max = (leftHeight > rightHeight) ? leftHeight : rightHeight;
-        current->height = max + 1;
+        current->height = 1 + std::max(leftHeight, rightHeight);
 
         balanceNode(current);
         return true;
