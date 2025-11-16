@@ -24,6 +24,7 @@ public:
 
     vector<KeyType> findRange(const KeyType& lowKey, const KeyType& highKey) const;
 
+    AVLTree(); // Default constructor
     vector<KeyType> keys() const;
     ValueType size() const;
     ValueType getHeight() const;
@@ -57,6 +58,7 @@ private:
 
     bool insertNode(AVLNode*& current, const KeyType& key, const ValueType& value);
 
+    void searchAndDestroy(AVLNode* node);
     /* Helper methods for remove */
     // removeNode contains the logic for actually removing a node based on the numebr of children
     bool removeNode(AVLNode*& current);

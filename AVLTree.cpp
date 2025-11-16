@@ -1,6 +1,27 @@
 #include "AVLTree.h"
 
+#include <functional>
 #include <string>
+
+AVLTree::AVLTree() : root(nullptr) {} // Default constructor
+
+// Destructor
+AVLTree::~AVLTree() {
+    searchAndDestroy(root);
+    delete root;
+}
+
+// Destructor helper
+void AVLTree::searchAndDestroy(AVLNode* node) {
+    // Base case if there is no more nodes (except root)
+    if (node == nullptr) {
+        return;
+    }
+
+    searchAndDestroy(node->left);
+    searchAndDestroy(node->right);
+    delete node;
+}
 
 size_t AVLTree::AVLNode::numChildren() const {
     return 0;
@@ -78,20 +99,72 @@ bool AVLTree::removeNode(AVLNode*& current){
 
 // private remove
 bool AVLTree::remove(AVLNode*& current, KeyType key) {
-    // similar to insert
+
+    // Base case
+    // Tree is empty or we reached a dead end
     if (!current) {
         return false;
     }
 
-    //
+    // Search left subtree for the node to remove (key-matching)
+    if (key < current->key) {
+        bool found = remove(current->left, key);
+        if (!found) {
+            return false;
+        }
+
+        // ---POST NODE DELETION--- //
+        // Node was removed->update height and rebalance
+        size_t leftHeight, rightHeight = 0;
+        if (current->left != nullptr) {
+            leftHeight = current->left->getHeight();
+        }
+
+        if (current->right != nullptr) {
+            rightHeight = current->right->getHeight();
+        }
+
+        size_t max = (leftHeight > rightHeight) ? leftHeight : rightHeight;
+        current->height = max + 1;
+
+        balanceNode(current);
+
+        // Continue up the tree
+        return true;
+    }
+    // Search right subtree
+    else if (key > current->key) {
+        bool found = remove(current->right, key);
+        if (!found) {
+            return false;
+        }
+
+        // Update height and rebalance
+        size_t leftHeight, rightHeight = 0;
+        if (current->left != nullptr) {
+            leftHeight = current->left->getHeight();
+        }
+
+        if (current->right != nullptr) {
+            rightHeight = current->right->getHeight();
+        }
+
+        size_t max = (leftHeight > rightHeight) ? leftHeight : rightHeight;
+        current->height = max + 1;
+
+        balanceNode(current);
+        return true;
+    }
+    else {
+        // Found the node (assuming key == current->key)
+        return removeNode(current);
+    }
+
 }
 
 // public remove
 bool AVLTree::remove(const KeyType& key) {
-    // todo: recursively find the node
-    // removeNode(current); // pass node to removeNode
-    // todo: call balance node
-    return false;
+    return remove(root, key);
 }
 
 void AVLTree::balanceNode(AVLNode *&node) {
@@ -139,4 +212,20 @@ bool AVLTree::insertNode(AVLNode*& current, const KeyType& key, const ValueType&
     balanceNode(current);
     return true; // After successful balance AND insertion
 
+}
+
+ostream& operator<<(ostream& os, const AVLTree& avlTree) {
+    function<void(AVLTree::AVLNode*)> print;
+    print = [&](AVLTree::AVLNode* node) {
+        if (node == nullptr) {
+            return;
+        }
+        print(node->left);
+        os << node->key;
+        print(node->right);
+    };
+
+    print(avlTree.root);
+
+    return os;
 }
