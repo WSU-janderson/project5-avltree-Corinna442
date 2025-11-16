@@ -16,51 +16,74 @@ size_t AVLTree::AVLNode::getHeight() const {
 
 bool AVLTree::removeNode(AVLNode*& current){
     if (!current) {
-        return false;
+        return false; // Nothing to delete
     }
 
     AVLNode* toDelete = current;
+
     auto nChildren = current->numChildren();
+
+    // CASE ONE: NO CHILD
     if (current->isLeaf()) {
         // case 1 we can delete the node
-        current = nullptr;
-    } else if (current->numChildren() == 1) {
+        current = nullptr; // Parent pointer points to nullptr now
+        delete toDelete;
+        return true;
+
+        // CASE 2: ONE CHILD
+    }
+
+    if (current->numChildren() == 1) {
         // case 2 - replace current with its only child
-        if (current->right) {
-            current = current->right;
-        } else {
+
+        AVLNode* child;
+
+        // Pick the only child
+        if (current->left != nullptr) {
             current = current->left;
+        } else {
+            current = current->right;
         }
-    } else {
+
+        current = child; // Replace node with its child
+        delete toDelete; // Delete original node
+        return true;
+    }
+    // CASE 3: TWO CHILDREN
         // case 3 - we have two children,
         // get smallest key in right subtree by
         // getting right child and go left until left is null
         AVLNode* smallestInRight = current->right;
         // I could check if smallestInRight is null,
         // but it shouldn't be since the node has two children
-        while (smallestInRight->left) {
+        while (smallestInRight->left != nullptr) {
             smallestInRight = smallestInRight->left;
         }
+
+        // Copy successor pair into this current node
         std::string newKey = smallestInRight->key;
         int newValue = smallestInRight->value;
-        remove(root, smallestInRight->key); // delete this one
-
         current->key = newKey;
         current->value = newValue;
 
-        current->height = current->getHeight();
-        balanceNode(current);
+        // current->height = current->getHeight();
+        // balanceNode(current);
 
-        return true; // we already deleted the one we needed to so return
+    // Remove successor node from the right subtree
+    bool removedNode = remove(current->right, smallestInRight->key);
+
+    return removedNode;
+
     }
-    delete toDelete;
-
-    return true;
-}
 
 // private remove
 bool AVLTree::remove(AVLNode*& current, KeyType key) {
-    return false;
+    // similar to insert
+    if (!current) {
+        return false;
+    }
+
+    //
 }
 
 // public remove
