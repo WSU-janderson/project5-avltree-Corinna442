@@ -66,6 +66,9 @@ private:
     bool remove(AVLNode*& current, KeyType key);
     // You will implement this, but it is needed for removeNode()
     void balanceNode(AVLNode*& node);
+    //helpers
+    void rotateToRight(AVLNode*& node);
+    void rotateToLeft(AVLNode*& node);
 };
 
 #endif //AVLTREE_H

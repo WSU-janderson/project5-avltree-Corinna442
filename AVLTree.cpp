@@ -3,44 +3,57 @@
 #include <functional>
 #include <string>
 
-AVLTree::AVLTree() : root(nullptr) {} // Default constructor
-
-// Destructor
-AVLTree::~AVLTree() {
-    searchAndDestroy(root);
-    root = nullptr;
+// node parameter is always the root node
+bool AVLTree::insert(const KeyType& key, const ValueType& value) {
+    return insertNode(root, key, value);
 }
 
-// Destructor helper
-void AVLTree::searchAndDestroy(AVLNode* node) {
-    // Base case if there is no more nodes (except root)
-    if (node == nullptr) {
-        return;
+// public remove
+bool AVLTree::remove(const KeyType& key) {
+    return remove(root, key);
+}
+
+bool AVLTree::insertNode(AVLNode*& current, const KeyType& key, const ValueType& value) {
+
+    // Base case: recurse and find null spot.
+    if (current == nullptr) {
+        current = new AVLNode{key, value, 1, nullptr, nullptr};
+        return true; // go back to parent now
     }
 
-    searchAndDestroy(node->left);
-    searchAndDestroy(node->right);
-    delete node;
-}
-
-size_t AVLTree::AVLNode::numChildren() const {
-    // Count left and right children (increment) and return the num
-    size_t numChildren = 0;
-    if (left) {
-        numChildren++;
+    // Check for duplicate key
+    if (key == current->key) {
+        return false;
     }
-    if (right) {
-        numChildren++;
+
+    bool success;
+
+    if (key < current->key) {
+        success = insertNode(current->left, key, value);
+    } else {
+        success = insertNode(current->right, key, value);
     }
-    return numChildren;
-}
 
-bool AVLTree::AVLNode::isLeaf() const {
-    return (left == nullptr && right == nullptr);
-}
+    // If insertion failed because of a duplicate then stop
+    if (!success) {
+        return false;
+    }
 
-size_t AVLTree::AVLNode::getHeight() const {
-    return height;
+    size_t leftHeight = 0, rightHeight = 0;
+    if (current->left != nullptr) {
+        leftHeight = current->left->getHeight();
+    }
+
+    if (current->right != nullptr) {
+        rightHeight = current->right->getHeight();
+    }
+
+    current->height = 1 + std::max(leftHeight, rightHeight);
+
+    // Rebalance
+    balanceNode(current);
+    return true; // After successful balance AND insertion
+
 }
 
 bool AVLTree::removeNode(AVLNode*& current){
@@ -167,55 +180,133 @@ bool AVLTree::remove(AVLNode*& current, KeyType key) {
 
 }
 
-// public remove
-bool AVLTree::remove(const KeyType& key) {
-    return remove(root, key);
+AVLTree::AVLTree() : root(nullptr) {} // Default constructor
+
+// Destructor
+AVLTree::~AVLTree() {
+    searchAndDestroy(root);
+    root = nullptr;
 }
+
+// Destructor helper
+void AVLTree::searchAndDestroy(AVLNode* node) {
+    // Base case if there is no more nodes (except root)
+    if (node == nullptr) {
+        return;
+    }
+
+    searchAndDestroy(node->left);
+    searchAndDestroy(node->right);
+    delete node;
+}
+
+size_t AVLTree::AVLNode::numChildren() const {
+    // Count left and right children (increment) and return the num
+    size_t numChildren = 0;
+    if (left) {
+        numChildren++;
+    }
+    if (right) {
+        numChildren++;
+    }
+    return numChildren;
+}
+
+bool AVLTree::AVLNode::isLeaf() const {
+    return (left == nullptr && right == nullptr);
+}
+
+size_t AVLTree::AVLNode::getHeight() const {
+    return height;
+}
+
+
 
 void AVLTree::balanceNode(AVLNode *&node) {
-    // algorithm from notes
+
+    // No using recursion**
+
+    if (node == nullptr) {
+        return;
+    }
+
+    // Calculate balance using heights
+    int balance = (node->left->height) - (node->right->height);
+
+    // CASE 1: LEFT HEAVY
+    if (balance > 1) {
+        int llHeight = (node->left->left->height);
+        int lrHeight = (node->left->right->height);
+
+        // Left-left subcase
+        if (llHeight >= lrHeight) {
+            // Rotate node to the right
+            rotateToRight(node);
+        }
+        // left-right
+        else {
+            // Double rotation: node->left
+            // Single rotation: node
+            rotateToLeft(node->left);
+            rotateToRight(node);
+        }
+        return;
+    }
+
+    // CASE 2: RIGHT HEAVY
+    if (balance < -1) {
+        int rrHeight = (node->right->right->height);
+        int rlHeight = (node->right->left->height);
+
+        // right-right subcase
+        if (rrHeight >= rlHeight) {
+            // Rotate node to the left
+            rotateToLeft(node);
+        }
+        // right-left
+        else {
+            // Double rotation: node->right
+            // Single rotation: node
+            rotateToRight(node->right);
+            rotateToLeft(node);
+        }
+        return;
+    }
 }
 
-// node parameter is always the root node
-bool AVLTree::insert(const KeyType& key, const ValueType& value) {
-    return insertNode(root, key, value);
+// Rotate right helper
+void AVLTree::rotateToRight(AVLNode*& node) {
+
+    // Store values
+    AVLNode* hook = node->left; // new root ( B is left of A )
+    AVLNode* hookRight = hook->right; // To the right of the hook (D)
+
+    // Rotate
+    hook->right = node; //hook becomes the root: right of B is now A
+    node->left = hookRight; // Right node from hook rotates left of prev root node (left of A is D)
+
+    // Update heights
+    node->height = 1 + max(node->left->height, node->right->height); // Update A's height
+    hook->height = 1 + max(hook->left->height, hook->right->height); // Update hook's height with its children
+    node = hook; // hook becomes new root
+
 }
 
-bool AVLTree::insertNode(AVLNode*& current, const KeyType& key, const ValueType& value) {
+// Rotate left helper
+void AVLTree::rotateToLeft(AVLNode*& node) {
 
-    // Base case: recurse and find null spot.
-    if (current == nullptr) {
-        current = new AVLNode{key, value, 1, nullptr, nullptr};
-        return true; // go back to parent now
-    }
+    // Store values
+    AVLNode* hook = node->right; // new root ( B is right of A )
+    AVLNode* hookLeft = hook->left; // To the left of the hook (D)
 
-    // Check for duplicate key
-    if (key == current->key) {
-        return false;
-    }
+    // Rotate
+    hook->left = node; //hook becomes the root: left of B is now A
+    node->right = hookLeft; // Left node from hook rotates right of prev root node (right of A is D)
 
-    bool success;
-
-    if (key < current->key) {
-        success = insertNode(current->left, key, value);
-    } else {
-        success = insertNode(current->right, key, value);
-    }
-
-    // If insertion failed because of a duplicate then stop
-    if (!success) {
-        return false;
-    }
-
-    // Update height on way back up
-    current->height = 1 + std::max(
-        current->left ? current->left->getHeight() : 0,
-        current->right ? current->right->getHeight() : 0
-        );
-
-    // Rebalance
-    balanceNode(current);
-    return true; // After successful balance AND insertion
+    // Update heights
+    node->height = 1 + max(node->left->height, node->right->height); // Update A's height
+    hook->height = 1 + max(hook->left->height, hook->right->height); // Update hook's height with its children
+    node = hook; // hook becomes new root
 
 }
 
