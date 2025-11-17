@@ -32,6 +32,8 @@ public:
     AVLTree& operator=(const AVLTree& other);
     ~AVLTree(); // deconstructor
 
+    size_t getTreeHeight() const;
+
     friend ostream& operator<<(ostream& os, const AVLTree& avlTree);
 
 
@@ -55,7 +57,7 @@ protected:
 
 private:
     AVLNode* root;
-
+    int getNodeHeight(AVLNode* node) const;
     bool insertNode(AVLNode*& current, const KeyType& key, const ValueType& value);
 
     void searchAndDestroy(AVLNode* node);

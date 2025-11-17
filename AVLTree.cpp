@@ -220,6 +220,14 @@ size_t AVLTree::AVLNode::getHeight() const {
     return height;
 }
 
+int AVLTree::getNodeHeight(AVLNode* node) const {
+    return node ? node->getHeight() : 0;
+}
+
+size_t AVLTree::getTreeHeight() const {
+    return root ? root->getHeight() : 0;
+}
+
 
 
 void AVLTree::balanceNode(AVLNode *&node) {
@@ -230,13 +238,12 @@ void AVLTree::balanceNode(AVLNode *&node) {
         return;
     }
 
-    // Calculate balance using heights
-    int balance = (node->left->height) - (node->right->height);
+    int balance = getNodeHeight(node->left) - getNodeHeight(node->right);
 
     // CASE 1: LEFT HEAVY
     if (balance > 1) {
-        int llHeight = (node->left->left->height);
-        int lrHeight = (node->left->right->height);
+        int llHeight = getNodeHeight(node->left->left);
+        int lrHeight = getNodeHeight(node->left->right);
 
         // Left-left subcase
         if (llHeight >= lrHeight) {
@@ -255,9 +262,9 @@ void AVLTree::balanceNode(AVLNode *&node) {
 
     // CASE 2: RIGHT HEAVY
     if (balance < -1) {
-        int rrHeight = (node->right->right->height);
-        int rlHeight = (node->right->left->height);
 
+        int rrHeight = getNodeHeight(node->right->right);
+        int rlHeight = getNodeHeight(node->right->left);
         // right-right subcase
         if (rrHeight >= rlHeight) {
             // Rotate node to the left
@@ -279,15 +286,15 @@ void AVLTree::rotateToRight(AVLNode*& node) {
 
     // Store values
     AVLNode* hook = node->left; // new root ( B is left of A )
-    AVLNode* hookRight = hook->right; // To the right of the hook (D)
+    AVLNode *hookRight = hook->right;;
 
     // Rotate
     hook->right = node; //hook becomes the root: right of B is now A
     node->left = hookRight; // Right node from hook rotates left of prev root node (left of A is D)
 
-    // Update heights
-    node->height = 1 + max(node->left->height, node->right->height); // Update A's height
-    hook->height = 1 + max(hook->left->height, hook->right->height); // Update hook's height with its children
+    node->height = 1 + std::max(getNodeHeight(node->left), getNodeHeight(node->right));
+    hook->height = 1 + std::max(getNodeHeight(hook->left), getNodeHeight(hook->right));
+
     node = hook; // hook becomes new root
 
 }
@@ -303,9 +310,9 @@ void AVLTree::rotateToLeft(AVLNode*& node) {
     hook->left = node; //hook becomes the root: left of B is now A
     node->right = hookLeft; // Left node from hook rotates right of prev root node (right of A is D)
 
-    // Update heights
-    node->height = 1 + max(node->left->height, node->right->height); // Update A's height
-    hook->height = 1 + max(hook->left->height, hook->right->height); // Update hook's height with its children
+    node->height = 1 + std::max(getNodeHeight(node->left), getNodeHeight(node->right));
+    hook->height = 1 + std::max(getNodeHeight(hook->left), getNodeHeight(hook->right));
+
     node = hook; // hook becomes new root
 
 }
