@@ -3,6 +3,30 @@
 #include <functional>
 #include <string>
 
+// Copy constructor
+AVLTree::AVLTree(const AVLTree& other) {
+    root = deepCopy(other.root);
+}
+
+// Private helper for copy constructor
+AVLTree::AVLNode* AVLTree::deepCopy(AVLNode* node) {
+// This recursively copies nodes
+    if (node == nullptr) {
+        return nullptr;
+    }
+
+    // Create node with the same parameters
+    AVLNode* newNode = new AVLNode(node->key, node->value, node->height, nullptr, nullptr);
+
+    // Copy left subtree
+    newNode->left = deepCopy(node->left);
+
+    // Copy right subtree
+    newNode->right = deepCopy(node->right);
+
+    return newNode;
+}
+
 // node parameter is always the root node
 bool AVLTree::insert(const KeyType& key, const ValueType& value) {
     return insertNode(root, key, value);

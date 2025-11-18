@@ -15,21 +15,23 @@ public:
     using KeyType = std::string;
     using ValueType = size_t;
 
-    bool insert(const KeyType& key, const ValueType&);
-    bool remove(const KeyType& key);
-
+    bool insert(const KeyType& key, const ValueType&); // insert method
+    bool remove(const KeyType& key); // remove method
     bool contains(const KeyType& key) const;
+
     optional<ValueType> get(const KeyType& key) const;
     KeyType& operator[](const ValueType& key);
 
     vector<KeyType> findRange(const KeyType& lowKey, const KeyType& highKey) const;
 
-    AVLTree(); // Default constructor
     vector<KeyType> keys() const;
     ValueType size() const;
     ValueType getHeight() const;
-    AVLTree(const AVLTree& other);
-    AVLTree& operator=(const AVLTree& other);
+
+    AVLTree(); // Default constructor
+    AVLTree(const AVLTree& other); // Copy constructor
+
+    AVLTree& operator=(const AVLTree& other); // Assignment operator
     ~AVLTree(); // deconstructor
 
     size_t getTreeHeight() const;
@@ -60,7 +62,7 @@ private:
     int getNodeHeight(AVLNode* node) const;
     bool insertNode(AVLNode*& current, const KeyType& key, const ValueType& value);
 
-    void searchAndDestroy(AVLNode* node);
+    void searchAndDestroy(AVLNode* node); // (get it? Like Metallica >.<)  helper: finds node and deletes it
     /* Helper methods for remove */
     // removeNode contains the logic for actually removing a node based on the numebr of children
     bool removeNode(AVLNode*& current);
@@ -71,6 +73,8 @@ private:
     //helpers
     void rotateToRight(AVLNode*& node);
     void rotateToLeft(AVLNode*& node);
+
+    AVLNode* deepCopy(AVLNode* node);
 };
 
 #endif //AVLTREE_H
