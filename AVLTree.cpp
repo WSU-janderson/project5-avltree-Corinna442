@@ -27,6 +27,93 @@ AVLTree::AVLNode* AVLTree::deepCopy(AVLNode* node) {
     return newNode;
 }
 
+// operator assignment
+AVLTree& AVLTree::operator=(const AVLTree& other) {
+    // Check if self-assigned
+    if (this == &other) {
+        return *this;
+    }
+
+    // Free existing tree
+    searchAndDestroy(root);
+    root = deepCopy(other.root); // deep copy from other tree
+    return *this;
+}
+
+bool AVLTree::contains(const KeyType& key) const {
+    return containsNode(root, key);
+}
+
+bool AVLTree::containsNode(AVLNode* node, const KeyType& key) const {
+    // Check for node
+    if (node == nullptr) {
+        return false;
+    }
+
+    // if key is in the tree, return true
+    if (key == node->key) {
+        return true;
+    }
+    else if (key < node->key) {
+        return containsNode(node->left, key); // left subtree
+    }
+    else {
+        return containsNode(node->right, key); // right subtree
+    }
+}
+
+optional<size_t> AVLTree::get(const KeyType& key) const {
+    return getNode(root, key);
+}
+
+optional<size_t> AVLTree::getNode(AVLNode* node, const KeyType& key) const {
+    // key not found
+    if (node == nullptr) {
+        return nullopt;
+    }
+
+    // Key found return val
+    if (key == node->key) {
+        return node->value;
+    }
+
+    if (key < node->key) {
+        return getNode(node->left, key);
+    } else {
+        return getNode(node->right, key);
+    }
+}
+
+size_t& AVLTree::operator[](const KeyType& key) {
+    AVLNode* node = nodeOperator(root, key);
+    return node->value;
+}
+
+AVLTree::AVLNode* AVLTree::nodeOperator(AVLNode*& node, const KeyType& key) {
+    // Base case: no node, so create a new one
+    if (node == nullptr) {
+        node = new AVLNode(key, 0); // default
+        return node;
+    }
+
+    // left
+    if (key < node->key) {
+        AVLNode* newNode = nodeOperator(node->left, key);
+        balanceNode(node);
+        return newNode;
+    }
+
+    // right
+    if (key < node->key) {
+        AVLNode* newNode = nodeOperator(node->right, key);
+        balanceNode(node);
+        return newNode;
+    }
+
+    return node; // key exists already, so return existing node
+}
+
+
 // node parameter is always the root node
 bool AVLTree::insert(const KeyType& key, const ValueType& value) {
     return insertNode(root, key, value);

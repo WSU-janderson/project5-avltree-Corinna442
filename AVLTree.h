@@ -20,7 +20,7 @@ public:
     bool contains(const KeyType& key) const;
 
     optional<ValueType> get(const KeyType& key) const;
-    KeyType& operator[](const ValueType& key);
+    size_t& operator[](const KeyType& key);
 
     vector<KeyType> findRange(const KeyType& lowKey, const KeyType& highKey) const;
 
@@ -61,6 +61,9 @@ private:
     AVLNode* root;
     int getNodeHeight(AVLNode* node) const;
     bool insertNode(AVLNode*& current, const KeyType& key, const ValueType& value);
+    bool containsNode(AVLNode* node, const KeyType& key) const;
+    optional<ValueType> getNode(AVLNode* node, const KeyType& key) const;
+    AVLNode* nodeOperator(AVLNode*& node, const KeyType& key);
 
     void searchAndDestroy(AVLNode* node); // (get it? Like Metallica >.<)  helper: finds node and deletes it
     /* Helper methods for remove */
